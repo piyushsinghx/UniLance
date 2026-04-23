@@ -1,25 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, SlidersHorizontal, X } from 'lucide-react';
+import { Search, SlidersHorizontal, X, Sparkles } from 'lucide-react';
 import GigCard from '../components/GigCard';
 import { SkeletonCard } from '../components/Loader';
 import Button from '../components/Button';
-
-// Mock data for demo
-const MOCK_GIGS = [
-  { _id: '1', title: 'I will build a modern React website with Tailwind CSS', category: 'web-development', pricing: { basic: { price: 50, deliveryDays: 3 } }, rating: 4.9, reviewCount: 127, seller: { name: 'Alex Chen', university: 'MIT' }, images: [] },
-  { _id: '2', title: 'Professional logo and brand identity design', category: 'design', pricing: { basic: { price: 35, deliveryDays: 2 } }, rating: 4.8, reviewCount: 89, seller: { name: 'Sarah Kim', university: 'Stanford' }, images: [] },
-  { _id: '3', title: 'SEO-optimized blog posts and article writing', category: 'writing', pricing: { basic: { price: 25, deliveryDays: 1 } }, rating: 4.7, reviewCount: 203, seller: { name: 'James Wilson', university: 'Harvard' }, images: [] },
-  { _id: '4', title: 'Cinematic video editing with motion graphics', category: 'video-editing', pricing: { basic: { price: 75, deliveryDays: 5 } }, rating: 5.0, reviewCount: 56, seller: { name: 'Maya Patel', university: 'UCLA' }, images: [] },
-  { _id: '5', title: 'Full-stack mobile app development in React Native', category: 'mobile-development', pricing: { basic: { price: 150, deliveryDays: 7 } }, rating: 4.9, reviewCount: 34, seller: { name: 'David Park', university: 'CMU' }, images: [] },
-  { _id: '6', title: 'Data analysis and visualization with Python', category: 'data-science', pricing: { basic: { price: 45, deliveryDays: 3 } }, rating: 4.6, reviewCount: 78, seller: { name: 'Emma Liu', university: 'Berkeley' }, images: [] },
-  { _id: '7', title: 'Social media marketing strategy and content', category: 'marketing', pricing: { basic: { price: 40, deliveryDays: 4 } }, rating: 4.8, reviewCount: 112, seller: { name: 'Ryan Taylor', university: 'NYU' }, images: [] },
-  { _id: '8', title: 'Custom UI/UX design for web and mobile apps', category: 'design', pricing: { basic: { price: 60, deliveryDays: 4 } }, rating: 4.9, reviewCount: 95, seller: { name: 'Lily Zhang', university: 'Parsons' }, images: [] },
-  { _id: '9', title: 'Node.js and Express REST API development', category: 'web-development', pricing: { basic: { price: 80, deliveryDays: 5 } }, rating: 4.7, reviewCount: 62, seller: { name: 'Tom Miller', university: 'Georgia Tech' }, images: [] },
-  { _id: '10', title: 'WordPress website design and customization', category: 'web-development', pricing: { basic: { price: 30, deliveryDays: 2 } }, rating: 4.5, reviewCount: 145, seller: { name: 'Sophia Lee', university: 'USC' }, images: [] },
-  { _id: '11', title: 'Professional resume and cover letter writing', category: 'writing', pricing: { basic: { price: 20, deliveryDays: 1 } }, rating: 4.9, reviewCount: 320, seller: { name: 'Michael Brown', university: 'UPenn' }, images: [] },
-  { _id: '12', title: 'Animated explainer video creation', category: 'video-editing', pricing: { basic: { price: 100, deliveryDays: 7 } }, rating: 4.8, reviewCount: 42, seller: { name: 'Isabella Martinez', university: 'Emerson' }, images: [] },
-];
+import PriceSlider from '../components/PriceSlider';
+import { SearchEmptyState } from '../components/EmptyState';
+import { getGigs } from '../services/gigService';
+import { getRecommendedGigs, trackSearch } from '../services/aiService';
+import useAuth from '../hooks/useAuth';
 
 const CATEGORIES = [
   { value: '', label: 'All Categories' },
@@ -30,60 +19,101 @@ const CATEGORIES = [
   { value: 'mobile-development', label: 'Mobile Dev' },
   { value: 'data-science', label: 'Data Science' },
   { value: 'marketing', label: 'Marketing' },
+  { value: 'other', label: 'Other' },
 ];
 
 const Gigs = () => {
+  const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [gigs, setGigs] = useState([]);
+  const [recommendedGigs, setRecommendedGigs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [recommendedLoading, setRecommendedLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     search: searchParams.get('search') || '',
     category: searchParams.get('category') || '',
     minPrice: '',
     maxPrice: '',
+    skills: '',
     rating: '',
     sort: 'newest',
   });
 
   useEffect(() => {
-    setLoading(true);
-    // Simulate API call with filtering
-    const timer = setTimeout(() => {
-      let filtered = [...MOCK_GIGS];
-      if (filters.category) filtered = filtered.filter((g) => g.category === filters.category);
-      if (filters.search) {
-        const q = filters.search.toLowerCase();
-        filtered = filtered.filter((g) => g.title.toLowerCase().includes(q) || g.category.includes(q));
-      }
-      if (filters.minPrice) filtered = filtered.filter((g) => g.pricing.basic.price >= Number(filters.minPrice));
-      if (filters.maxPrice) filtered = filtered.filter((g) => g.pricing.basic.price <= Number(filters.maxPrice));
-      if (filters.rating) filtered = filtered.filter((g) => g.rating >= Number(filters.rating));
+    setFilters((prev) => ({
+      ...prev,
+      search: searchParams.get('search') || '',
+      category: searchParams.get('category') || '',
+    }));
+  }, [searchParams]);
 
-      if (filters.sort === 'price-low') filtered.sort((a, b) => a.pricing.basic.price - b.pricing.basic.price);
-      if (filters.sort === 'price-high') filtered.sort((a, b) => b.pricing.basic.price - a.pricing.basic.price);
-      if (filters.sort === 'rating') filtered.sort((a, b) => b.rating - a.rating);
-
-      setGigs(filtered);
+  const fetchGigs = useCallback(async () => {
+    try {
+      setLoading(true);
+      const { data } = await getGigs({
+        ...filters,
+        limit: 24
+      });
+      setGigs(data.gigs);
+    } catch (error) {
+      console.error('Failed to fetch gigs', error);
+    } finally {
       setLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
+    }
   }, [filters]);
+
+  useEffect(() => {
+    fetchGigs();
+  }, [fetchGigs]);
+
+  useEffect(() => {
+    if (user && !filters.search && !filters.category && !filters.skills) {
+      const fetchRecommended = async () => {
+        try {
+          setRecommendedLoading(true);
+          const { data } = await getRecommendedGigs();
+          setRecommendedGigs(data || []);
+        } catch (error) {
+          console.error('Failed to fetch recommendations', error);
+        } finally {
+          setRecommendedLoading(false);
+        }
+      };
+      fetchRecommended();
+    } else {
+      setRecommendedGigs([]);
+    }
+  }, [user, filters.search, filters.category, filters.skills]);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    setSearchParams(filters.search ? { search: filters.search } : {});
+    const nextParams = {};
+
+    if (filters.search) {
+      nextParams.search = filters.search;
+    }
+
+    if (filters.category) {
+      nextParams.category = filters.category;
+    }
+
+    setSearchParams(nextParams);
+
+    if (user && filters.search.trim()) {
+      trackSearch(filters.search.trim()).catch(() => {});
+    }
   };
 
   const clearFilters = () => {
-    setFilters({ search: '', category: '', minPrice: '', maxPrice: '', rating: '', sort: 'newest' });
+    setFilters({ search: '', category: '', minPrice: '', maxPrice: '', skills: '', rating: '', sort: 'newest' });
     setSearchParams({});
   };
 
-  const hasActiveFilters = filters.category || filters.minPrice || filters.maxPrice || filters.rating;
+  const hasActiveFilters = filters.category || filters.minPrice || filters.maxPrice || filters.skills || filters.rating;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-text-primary mb-2">
@@ -91,10 +121,37 @@ const Gigs = () => {
             ? CATEGORIES.find((c) => c.value === filters.category)?.label
             : filters.search
               ? `Results for "${filters.search}"`
-              : 'Explore All Gigs'}
+              : 'Explore Gigs'}
         </h1>
-        <p className="text-text-secondary">{gigs.length} services available</p>
+        <p className="text-text-secondary">Find the perfect service for your project</p>
       </div>
+
+      {/* Recommended Section (AI) */}
+      {!filters.search && !filters.category && user && (recommendedLoading || recommendedGigs.length > 0) && (
+        <div className="mb-12">
+          <div className="flex items-center gap-2 mb-6">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white shadow-lg shadow-primary/20">
+              <Sparkles size={16} />
+            </div>
+            <h2 className="text-xl font-bold text-text-primary">AI Recommended For You</h2>
+          </div>
+          
+          {recommendedLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {recommendedGigs.slice(0, 4).map((gig, i) => (
+                <div key={gig._id} className="animate-fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
+                  <GigCard gig={gig} isRecommended={true} />
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="h-px bg-border my-8"></div>
+        </div>
+      )}
 
       {/* Search + Filter Bar */}
       <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -104,15 +161,15 @@ const Gigs = () => {
             type="text"
             value={filters.search}
             onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-            placeholder="Search gigs..."
+            placeholder="Search gigs or skills..."
             className="w-full pl-11 pr-4 py-3 bg-bg-secondary border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm"
           />
         </form>
         <div className="flex gap-3">
-          <Button variant="secondary" onClick={() => setShowFilters(!showFilters)}>
+          <Button variant={hasActiveFilters ? "primary" : "secondary"} onClick={() => setShowFilters(!showFilters)}>
             <SlidersHorizontal size={16} />
             Filters
-            {hasActiveFilters && <span className="w-2 h-2 bg-primary rounded-full"></span>}
+            {hasActiveFilters && <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-accent rounded-full border-2 border-bg-primary"></span>}
           </Button>
           <select
             value={filters.sort}
@@ -122,49 +179,85 @@ const Gigs = () => {
             <option value="newest">Newest</option>
             <option value="price-low">Price: Low to High</option>
             <option value="price-high">Price: High to Low</option>
-            <option value="rating">Top Rated</option>
+            <option value="popular">Top Rated & Popular</option>
           </select>
         </div>
       </div>
 
       {/* Filter panel */}
       {showFilters && (
-        <div className="bg-bg-secondary rounded-xl border border-border p-6 mb-8 animate-fade-in">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-text-primary">Filters</h3>
+        <div className="bg-bg-secondary rounded-xl border border-border p-6 mb-8 animate-fade-in shadow-xl shadow-black/10">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="font-semibold text-text-primary flex items-center gap-2">
+              <SlidersHorizontal size={18} /> Advanced Filters
+            </h3>
             {hasActiveFilters && (
-              <button onClick={clearFilters} className="text-sm text-primary hover:text-primary-hover flex items-center gap-1">
-                <X size={14} /> Clear all
+              <button 
+                onClick={clearFilters} 
+                className="text-sm font-medium text-error hover:bg-error/10 px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors"
+              >
+                <X size={14} /> Clear All
               </button>
             )}
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-xs text-text-secondary mb-1.5">Category</label>
-              <select value={filters.category} onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-                className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2.5 text-text-primary text-sm focus:outline-none focus:border-primary">
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="space-y-3">
+              <label className="block text-sm font-medium text-text-primary">Category</label>
+              <select 
+                value={filters.category} 
+                onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+                className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2.5 text-text-primary text-sm focus:outline-none focus:border-primary"
+              >
                 {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
               </select>
             </div>
-            <div>
-              <label className="block text-xs text-text-secondary mb-1.5">Min Price ($)</label>
-              <input type="number" value={filters.minPrice} onChange={(e) => setFilters({ ...filters, minPrice: e.target.value })} placeholder="0"
-                className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2.5 text-text-primary text-sm focus:outline-none focus:border-primary" />
+            
+            <div className="space-y-3">
+              <div className="flex justify-between items-center text-sm font-medium">
+                <label className="text-text-primary">Price Range (₹)</label>
+              </div>
+              <PriceSlider 
+                min={0} 
+                max={50000} 
+                initialMin={filters.minPrice ? Number(filters.minPrice) : 0} 
+                initialMax={filters.maxPrice ? Number(filters.maxPrice) : 50000}
+                onChange={({ min, max }) => {
+                  setFilters({ ...filters, minPrice: min > 0 ? min : '', maxPrice: max < 50000 ? max : '' });
+                }} 
+              />
             </div>
-            <div>
-              <label className="block text-xs text-text-secondary mb-1.5">Max Price ($)</label>
-              <input type="number" value={filters.maxPrice} onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value })} placeholder="1000"
-                className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2.5 text-text-primary text-sm focus:outline-none focus:border-primary" />
+            
+            <div className="space-y-3">
+              <label className="block text-sm font-medium text-text-primary">Minimum Rating</label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { value: '', label: 'Any Rating' },
+                  { value: '4.5', label: '4.5+ ⭐' },
+                  { value: '4', label: '4.0+ ⭐' },
+                  { value: '3', label: '3.0+ ⭐' }
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setFilters({ ...filters, rating: opt.value })}
+                    className={`px-3 py-2 text-sm rounded-lg border transition-all ${filters.rating === opt.value ? 'bg-primary/10 border-primary text-primary' : 'bg-bg-primary border-border text-text-secondary hover:border-primary/50'}`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div>
-              <label className="block text-xs text-text-secondary mb-1.5">Min Rating</label>
-              <select value={filters.rating} onChange={(e) => setFilters({ ...filters, rating: e.target.value })}
-                className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2.5 text-text-primary text-sm focus:outline-none focus:border-primary">
-                <option value="">Any</option>
-                <option value="4.5">4.5+</option>
-                <option value="4">4.0+</option>
-                <option value="3.5">3.5+</option>
-              </select>
+
+            <div className="space-y-3 md:col-span-3">
+              <label className="block text-sm font-medium text-text-primary">Skill Tags</label>
+              <input
+                type="text"
+                value={filters.skills}
+                onChange={(e) => setFilters({ ...filters, skills: e.target.value })}
+                placeholder="react, python, ui ux"
+                className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2.5 text-text-primary text-sm focus:outline-none focus:border-primary"
+              />
+              <p className="text-xs text-text-muted">Use comma-separated skills to narrow gigs by tags.</p>
             </div>
           </div>
         </div>
@@ -176,16 +269,11 @@ const Gigs = () => {
           {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
         </div>
       ) : gigs.length === 0 ? (
-        <div className="text-center py-20">
-          <div className="text-6xl mb-4">🔍</div>
-          <h3 className="text-xl font-semibold text-text-primary mb-2">No gigs found</h3>
-          <p className="text-text-secondary mb-6">Try adjusting your filters or search terms</p>
-          <Button variant="outline" onClick={clearFilters}>Clear Filters</Button>
-        </div>
+        <SearchEmptyState query={filters.search} />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {gigs.map((gig, i) => (
-            <div key={gig._id} className="animate-fade-in" style={{ animationDelay: `${i * 0.03}s` }}>
+            <div key={gig._id} className="animate-fade-in" style={{ animationDelay: `${i * 0.05}s` }}>
               <GigCard gig={gig} />
             </div>
           ))}

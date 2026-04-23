@@ -8,6 +8,7 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const connectDB = require('./config/db');
 const setupSocket = require('./socket/socket');
 const { errorHandler, notFound } = require('./middleware/errorMiddleware');
+const { apiLimiter, authLimiter } = require('./middleware/rateLimiter');
 
 // Route imports
 const authRoutes = require('./routes/authRoutes');
@@ -15,6 +16,12 @@ const gigRoutes = require('./routes/gigRoutes');
 const userRoutes = require('./routes/userRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const messageRoutes = require('./routes/messageRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+const reviewRoutes = require('./routes/reviewRoutes');
+const analyticsRoutes = require('./routes/analyticsRoutes');
+const aiRoutes = require('./routes/aiRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
 
 const app = express();
 const server = http.createServer(app);
@@ -27,6 +34,9 @@ const io = new Server(server, {
   },
 });
 
+// Make io accessible to controllers
+app.set('io', io);
+
 setupSocket(io);
 
 // Middleware
@@ -34,11 +44,15 @@ app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:5173',
   credentials: true,
 }));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // Static uploads folder
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Rate limiting
+app.use('/api/auth', authLimiter);
+app.use('/api', apiLimiter);
 
 // API Routes
 app.use('/api/auth', authRoutes);
@@ -46,6 +60,12 @@ app.use('/api/gigs', gigRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

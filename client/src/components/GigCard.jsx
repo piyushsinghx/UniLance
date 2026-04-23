@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
-import { Star, Clock } from 'lucide-react';
+import { Star, Clock, Sparkles } from 'lucide-react';
 import { formatPrice, truncate } from '../utils/formatDate';
+import OnlineIndicator from './OnlineIndicator';
 
-const GigCard = ({ gig }) => {
+const GigCard = ({ gig, isRecommended = false }) => {
   const {
     _id,
     title,
@@ -56,11 +57,24 @@ const GigCard = ({ gig }) => {
         </div>
 
         {/* Content */}
-        <div className="p-4">
+        <div className="p-4 relative">
+          {/* AI Badge */}
+          {isRecommended && (
+            <div className="absolute -top-3 right-3 bg-gradient-to-r from-primary to-accent text-white text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full flex items-center gap-1 shadow-lg shadow-primary/30">
+              <Sparkles size={10} />
+              AI Recommended
+            </div>
+          )}
+
           {/* Seller */}
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-xs font-semibold">
-              {seller?.name?.charAt(0) || 'U'}
+            <div className="relative">
+              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-xs font-semibold">
+                {seller?.name?.charAt(0) || 'U'}
+              </div>
+              <div className="absolute -bottom-0.5 -right-0.5">
+                <OnlineIndicator isOnline={seller?.isOnline} size="sm" />
+              </div>
             </div>
             <span className="text-xs text-text-secondary font-medium">{seller?.name || 'Unknown'}</span>
             {seller?.university && (

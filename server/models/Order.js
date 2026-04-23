@@ -28,7 +28,7 @@ const orderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['pending', 'active', 'completed', 'cancelled'],
+      enum: ['pending', 'active', 'delivered', 'revision', 'completed', 'cancelled'],
       default: 'pending',
     },
     deliveryDate: {
@@ -37,6 +37,43 @@ const orderSchema = new mongoose.Schema(
     requirements: {
       type: String,
       default: '',
+    },
+    // Delivery
+    deliveryFiles: {
+      type: [String],
+      default: [],
+    },
+    deliveryMessage: {
+      type: String,
+      default: '',
+    },
+    deliveredAt: {
+      type: Date,
+    },
+    completedAt: {
+      type: Date,
+    },
+    // Revision requests
+    revisionRequests: [
+      {
+        message: { type: String, required: true },
+        requestedAt: { type: Date, default: Date.now },
+        resolvedAt: { type: Date },
+      },
+    ],
+    // Payment (Razorpay)
+    razorpayOrderId: {
+      type: String,
+      default: '',
+    },
+    razorpayPaymentId: {
+      type: String,
+      default: '',
+    },
+    paymentStatus: {
+      type: String,
+      enum: ['pending', 'paid', 'refunded', 'failed'],
+      default: 'pending',
     },
   },
   { timestamps: true }

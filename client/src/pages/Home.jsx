@@ -3,90 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Search, Code, Palette, PenTool, Video, Smartphone, BarChart3, Megaphone, Star, ArrowRight, Users, Shield, Zap, TrendingUp } from 'lucide-react';
 import Button from '../components/Button';
 import GigCard from '../components/GigCard';
+import { SkeletonCard } from '../components/Loader';
+import { getFeaturedGigs } from '../services/gigService';
+import { useEffect } from 'react';
 
-// Mock featured gigs
-const FEATURED_GIGS = [
-  {
-    _id: '1',
-    title: 'I will build a modern React website with Tailwind CSS',
-    category: 'web-development',
-    pricing: { basic: { price: 50, deliveryDays: 3 } },
-    rating: 4.9,
-    reviewCount: 127,
-    seller: { name: 'Alex Chen', university: 'MIT', avatar: '' },
-    images: [],
-  },
-  {
-    _id: '2',
-    title: 'Professional logo and brand identity design',
-    category: 'design',
-    pricing: { basic: { price: 35, deliveryDays: 2 } },
-    rating: 4.8,
-    reviewCount: 89,
-    seller: { name: 'Sarah Kim', university: 'Stanford', avatar: '' },
-    images: [],
-  },
-  {
-    _id: '3',
-    title: 'SEO-optimized blog posts and article writing',
-    category: 'writing',
-    pricing: { basic: { price: 25, deliveryDays: 1 } },
-    rating: 4.7,
-    reviewCount: 203,
-    seller: { name: 'James Wilson', university: 'Harvard', avatar: '' },
-    images: [],
-  },
-  {
-    _id: '4',
-    title: 'Cinematic video editing with motion graphics',
-    category: 'video-editing',
-    pricing: { basic: { price: 75, deliveryDays: 5 } },
-    rating: 5.0,
-    reviewCount: 56,
-    seller: { name: 'Maya Patel', university: 'UCLA', avatar: '' },
-    images: [],
-  },
-  {
-    _id: '5',
-    title: 'Full-stack mobile app development in React Native',
-    category: 'mobile-development',
-    pricing: { basic: { price: 150, deliveryDays: 7 } },
-    rating: 4.9,
-    reviewCount: 34,
-    seller: { name: 'David Park', university: 'CMU', avatar: '' },
-    images: [],
-  },
-  {
-    _id: '6',
-    title: 'Data analysis and visualization with Python',
-    category: 'data-science',
-    pricing: { basic: { price: 45, deliveryDays: 3 } },
-    rating: 4.6,
-    reviewCount: 78,
-    seller: { name: 'Emma Liu', university: 'Berkeley', avatar: '' },
-    images: [],
-  },
-  {
-    _id: '7',
-    title: 'Social media marketing strategy and content',
-    category: 'marketing',
-    pricing: { basic: { price: 40, deliveryDays: 4 } },
-    rating: 4.8,
-    reviewCount: 112,
-    seller: { name: 'Ryan Taylor', university: 'NYU', avatar: '' },
-    images: [],
-  },
-  {
-    _id: '8',
-    title: 'Custom UI/UX design for web and mobile apps',
-    category: 'design',
-    pricing: { basic: { price: 60, deliveryDays: 4 } },
-    rating: 4.9,
-    reviewCount: 95,
-    seller: { name: 'Lily Zhang', university: 'Parsons', avatar: '' },
-    images: [],
-  },
-];
+
 
 const CATEGORIES = [
   { name: 'Web Development', slug: 'web-development', icon: Code, color: 'from-blue-500 to-indigo-600' },
@@ -107,7 +28,23 @@ const STATS = [
 
 const Home = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [featuredGigs, setFeaturedGigs] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      try {
+        const { data } = await getFeaturedGigs();
+        setFeaturedGigs(data);
+      } catch (error) {
+        console.error('Error fetching featured gigs:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFeatured();
+  }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -243,11 +180,17 @@ const Home = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {FEATURED_GIGS.map((gig, i) => (
-              <div key={gig._id} className="animate-fade-in" style={{ animationDelay: `${i * 0.05}s` }}>
-                <GigCard gig={gig} />
-              </div>
-            ))}
+            {loading ? (
+              Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
+            ) : featuredGigs.length > 0 ? (
+              featuredGigs.slice(0, 4).map((gig, i) => (
+                <div key={gig._id} className="animate-fade-in" style={{ animationDelay: `${i * 0.05}s` }}>
+                  <GigCard gig={gig} />
+                </div>
+              ))
+            ) : (
+              <p className="col-span-full text-center py-8 text-text-secondary">No featured gigs at the moment.</p>
+            )}
           </div>
 
           <div className="text-center mt-10 sm:hidden">

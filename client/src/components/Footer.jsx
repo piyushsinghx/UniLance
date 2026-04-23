@@ -32,9 +32,14 @@ const Footer = () => {
           <div>
             <h4 className="text-sm font-semibold text-text-primary mb-4">Platform</h4>
             <ul className="space-y-2.5">
-              {['Explore Gigs', 'How It Works', 'Pricing', 'Categories'].map((item) => (
-                <li key={item}>
-                  <a href="#" className="text-sm text-text-secondary hover:text-text-primary transition-colors">{item}</a>
+              {[
+                { name: 'Explore Gigs', path: '/gigs' },
+                { name: 'How It Works', path: '/how-it-works' },
+                { name: 'Pricing', path: '/pricing' },
+                { name: 'Categories', path: '/categories' }
+              ].map((item) => (
+                <li key={item.name}>
+                  <Link to={item.path} className="text-sm text-text-secondary hover:text-text-primary transition-colors">{item.name}</Link>
                 </li>
               ))}
             </ul>
@@ -43,20 +48,33 @@ const Footer = () => {
           <div>
             <h4 className="text-sm font-semibold text-text-primary mb-4">Resources</h4>
             <ul className="space-y-2.5">
-              {['Help Center', 'Blog', 'Community', 'Student Guide'].map((item) => (
-                <li key={item}>
-                  <a href="#" className="text-sm text-text-secondary hover:text-text-primary transition-colors">{item}</a>
+              {[
+                { name: 'Help Center', path: '/help-center' },
+                { name: 'Blog', path: '/blog' },
+                { name: 'Community', path: '/community' },
+                { name: 'Student Guide', path: '/student-guide' }
+              ].map((item) => (
+                <li key={item.name}>
+                  <Link to={item.path} className="text-sm text-text-secondary hover:text-text-primary transition-colors">{item.name}</Link>
                 </li>
               ))}
             </ul>
           </div>
 
           <div>
-            <h4 className="text-sm font-semibold text-text-primary mb-4">Legal</h4>
+            <h4 className="text-sm font-semibold text-text-primary mb-4">Legal & Company</h4>
             <ul className="space-y-2.5">
-              {['Terms of Service', 'Privacy Policy', 'Cookie Policy', 'Trust & Safety'].map((item) => (
-                <li key={item}>
-                  <a href="#" className="text-sm text-text-secondary hover:text-text-primary transition-colors">{item}</a>
+              {[
+                { name: 'Terms of Service', path: '/terms' },
+                { name: 'Privacy Policy', path: '/privacy' },
+                { name: 'Cookie Policy', path: '/cookies' },
+                { name: 'Trust & Safety', path: '/trust-safety' },
+                { name: 'About Us', path: '/about' },
+                { name: 'Contact', path: '/contact' },
+                { name: 'Careers', path: '/careers' }
+              ].map((item) => (
+                <li key={item.name}>
+                  <Link to={item.path} className="text-sm text-text-secondary hover:text-text-primary transition-colors">{item.name}</Link>
                 </li>
               ))}
             </ul>

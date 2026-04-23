@@ -1,19 +1,42 @@
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
+const { isAcademicEmail } = require('../utils/studentVerification');
+
+const buildAuthPayload = (user) => ({
+  _id: user._id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+  university: user.university,
+  avatar: user.avatar,
+  bio: user.bio,
+  skills: user.skills,
+  isVerified: user.isVerified,
+  verificationStatus: user.verificationStatus,
+  collegeIdImage: user.collegeIdImage,
+  createdAt: user.createdAt,
+  token: generateToken(user._id),
+});
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
 const register = async (req, res) => {
   try {
-    const { name, email, password, role, university } = req.body;
+    const { name, email, password, role, university, collegeIdImage } = req.body;
 
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Check for college email (basic check for .edu or common patterns)
-    const isCollegeEmail = email.endsWith('.edu') || email.endsWith('.ac.in') || email.endsWith('.edu.in') || email.includes('.ac.');
+    const hasAcademicEmail = isAcademicEmail(email);
+    const hasManualVerification = Boolean(collegeIdImage);
+
+    if (!hasAcademicEmail && !hasManualVerification) {
+      return res.status(400).json({
+        message: 'Use a college email or upload a college ID for manual approval.',
+      });
+    }
     
     const user = await User.create({
       name,
@@ -21,18 +44,12 @@ const register = async (req, res) => {
       password,
       role: role || 'buyer',
       university: university || '',
-      isVerified: isCollegeEmail,
+      collegeIdImage: collegeIdImage || '',
+      isVerified: hasAcademicEmail,
+      verificationStatus: hasAcademicEmail ? 'verified' : 'pending',
     });
 
-    res.status(201).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      university: user.university,
-      isVerified: user.isVerified,
-      token: generateToken(user._id),
-    });
+    res.status(201).json(buildAuthPayload(user));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -54,16 +71,7 @@ const login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      university: user.university,
-      avatar: user.avatar,
-      isVerified: user.isVerified,
-      token: generateToken(user._id),
-    });
+    res.json(buildAuthPayload(user));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

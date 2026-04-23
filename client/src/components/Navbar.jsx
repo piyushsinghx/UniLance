@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, Search, Bell, MessageSquare, ChevronDown, LogOut, User, LayoutDashboard } from 'lucide-react';
 import useAuth from '../hooks/useAuth';
+import NotificationDropdown from './NotificationDropdown';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -45,10 +46,7 @@ const Navbar = () => {
                 <Link to="/messages" className="relative text-text-secondary hover:text-text-primary transition-colors">
                   <MessageSquare size={20} />
                 </Link>
-                <button className="relative text-text-secondary hover:text-text-primary transition-colors">
-                  <Bell size={20} />
-                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-accent rounded-full"></span>
-                </button>
+                <NotificationDropdown />
 
                 {/* User dropdown */}
                 <div className="relative">

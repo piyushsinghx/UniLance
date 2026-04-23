@@ -59,6 +59,28 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    verificationStatus: {
+      type: String,
+      enum: ['pending', 'verified', 'rejected'],
+      default: 'pending',
+    },
+    collegeIdImage: {
+      type: String,
+      default: '',
+    },
+    isOnline: {
+      type: Boolean,
+      default: false,
+    },
+    lastSeen: {
+      type: Date,
+      default: Date.now,
+    },
+    searchHistory: {
+      type: [String],
+      default: [],
+      select: false,
+    },
     rating: {
       type: Number,
       default: 0,

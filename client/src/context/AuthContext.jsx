@@ -1,4 +1,5 @@
 import { createContext, useState, useEffect } from 'react';
+import { getMe } from '../services/authService';
 
 export const AuthContext = createContext(null);
 
@@ -7,15 +8,33 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const stored = localStorage.getItem('unilance_user');
-    if (stored) {
-      try {
-        setUser(JSON.parse(stored));
-      } catch {
-        localStorage.removeItem('unilance_user');
+    const bootstrapAuth = async () => {
+      const stored = localStorage.getItem('unilance_user');
+
+      if (!stored) {
+        setLoading(false);
+        return;
       }
-    }
-    setLoading(false);
+
+      try {
+        const parsedUser = JSON.parse(stored);
+        setUser(parsedUser);
+
+        if (parsedUser?.token) {
+          const { data } = await getMe();
+          const hydratedUser = { ...parsedUser, ...data, token: parsedUser.token };
+          setUser(hydratedUser);
+          localStorage.setItem('unilance_user', JSON.stringify(hydratedUser));
+        }
+      } catch {
+        setUser(null);
+        localStorage.removeItem('unilance_user');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    bootstrapAuth();
   }, []);
 
   const login = (userData) => {
@@ -34,8 +53,20 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('unilance_user', JSON.stringify(updated));
   };
 
+  const refreshUser = async () => {
+    if (!user?.token) {
+      return null;
+    }
+
+    const { data } = await getMe();
+    const refreshedUser = { ...user, ...data };
+    setUser(refreshedUser);
+    localStorage.setItem('unilance_user', JSON.stringify(refreshedUser));
+    return refreshedUser;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, updateUser, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
