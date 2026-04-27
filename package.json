@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "UniLance - Freelance marketplace for university students",
   "scripts": {
-    "start": "cd server && npm start",
+    "build": "cd server && npm install",
+    "start": "cd server && node server.js",
     "dev": "cd server && npm run dev",
     "seed": "cd server && npm run seed",
     "install-all": "npm install && cd server && npm install"

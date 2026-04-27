@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: unilance
+    env: node
+    buildCommand: npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false # You must add your MongoDB Atlas URI in the Render dashboard
+      - key: JWT_SECRET
+        generateValue: true
+      - key: RAZORPAY_KEY_ID
+        sync: false # Add this in Render dashboard
+      - key: RAZORPAY_KEY_SECRET
+        sync: false # Add this in Render dashboard
