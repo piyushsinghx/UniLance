@@ -88,8 +88,9 @@ To build a modern freelance platform exclusively for **college students**, enabl
 
 ### Frontend
 
-* React (Vite)
-* Tailwind CSS
+* HTML
+*  CSS
+*  JS
 
 ### Backend
 
