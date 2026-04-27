@@ -1,6 +1,5 @@
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
-const { isAcademicEmail } = require('../utils/studentVerification');
 
 const buildAuthPayload = (user) => ({
   _id: user._id,
@@ -13,7 +12,6 @@ const buildAuthPayload = (user) => ({
   skills: user.skills,
   isVerified: user.isVerified,
   verificationStatus: user.verificationStatus,
-  collegeIdImage: user.collegeIdImage,
   createdAt: user.createdAt,
   token: generateToken(user._id),
 });
@@ -22,31 +20,21 @@ const buildAuthPayload = (user) => ({
 // @route   POST /api/auth/register
 const register = async (req, res) => {
   try {
-    const { name, email, password, role, university, collegeIdImage } = req.body;
+    const { name, email, password, role, university } = req.body;
 
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    const hasAcademicEmail = isAcademicEmail(email);
-    const hasManualVerification = Boolean(collegeIdImage);
-
-    if (!hasAcademicEmail && !hasManualVerification) {
-      return res.status(400).json({
-        message: 'Use a college email or upload a college ID for manual approval.',
-      });
-    }
-    
     const user = await User.create({
       name,
       email,
       password,
       role: role || 'buyer',
       university: university || '',
-      collegeIdImage: collegeIdImage || '',
-      isVerified: hasAcademicEmail,
-      verificationStatus: hasAcademicEmail ? 'verified' : 'pending',
+      isVerified: true,
+      verificationStatus: 'verified',
     });
 
     res.status(201).json(buildAuthPayload(user));

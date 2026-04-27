@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, User, GraduationCap, Info } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, User, GraduationCap } from 'lucide-react';
 import { registerUser } from '../services/authService';
-import { uploadImage } from '../services/uploadService';
 import useAuth from '../hooks/useAuth';
 import Button from '../components/Button';
-import FileUpload from '../components/FileUpload';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -16,18 +14,11 @@ const Register = () => {
     role: 'buyer',
     university: '',
   });
-  const [collegeIdFile, setCollegeIdFile] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
-
-  const isCollegeEmail =
-    formData.email.endsWith('.edu') ||
-    formData.email.endsWith('.ac.in') ||
-    formData.email.includes('.ac.');
-  const needsManualVerification = Boolean(formData.email) && !isCollegeEmail;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -43,28 +34,14 @@ const Register = () => {
       return;
     }
 
-    if (needsManualVerification && !collegeIdFile) {
-      setError('Upload a college ID if you are not using an academic email.');
-      return;
-    }
-
     setLoading(true);
     try {
-      let collegeIdImageUrl = '';
-      if (collegeIdFile) {
-        const fileData = new FormData();
-        fileData.append('image', collegeIdFile);
-        const uploadRes = await uploadImage(fileData);
-        collegeIdImageUrl = uploadRes.data.url;
-      }
-
       const { data } = await registerUser({
         name: formData.name,
         email: formData.email,
         password: formData.password,
         role: formData.role,
         university: formData.university,
-        collegeIdImage: collegeIdImageUrl,
       });
 
       login(data);
@@ -133,30 +110,22 @@ const Register = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">College Email</label>
+              <label className="block text-sm font-medium text-text-primary mb-2">Email</label>
               <div className="relative">
                 <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" />
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="you@university.edu"
+                  placeholder="you@email.com"
                   required
                   className="w-full pl-11 pr-4 py-3 bg-bg-primary border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-sm"
                 />
               </div>
-              {formData.email && (
-                <div className={`flex items-center gap-1.5 mt-2 text-xs ${isCollegeEmail ? 'text-success' : 'text-warning'}`}>
-                  <Info size={12} />
-                  {isCollegeEmail
-                    ? 'College email detected - your account will be auto-verified.'
-                    : 'Manual review required - upload your college ID to continue.'}
-                </div>
-              )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">University</label>
+              <label className="block text-sm font-medium text-text-primary mb-2">University (optional)</label>
               <div className="relative">
                 <GraduationCap size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" />
                 <input
@@ -168,20 +137,6 @@ const Register = () => {
                 />
               </div>
             </div>
-
-            {needsManualVerification && (
-              <div className="bg-bg-primary border border-border rounded-xl p-4 mt-2">
-                <label className="block text-sm font-medium text-text-primary mb-2">College ID Verification</label>
-                <p className="text-xs text-text-secondary mb-3">
-                  UniLance is a student-only network. Upload your college ID when you are not signing up with an academic email.
-                </p>
-                <FileUpload
-                  accept="*"
-                  maxSizeMB={5}
-                  onUploadSelect={(files) => setCollegeIdFile(files[0])}
-                />
-              </div>
-            )}
 
             <div>
               <label className="block text-sm font-medium text-text-primary mb-2">Password</label>

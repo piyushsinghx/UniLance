@@ -83,7 +83,8 @@ const Login = () => {
       const { data } = await loginUser({ email: form.email, password: form.password });
       login(data);
       toast.success('Welcome back! 🎉');
-      navigate(from, { replace: true });
+      const dest = data.role === 'admin' ? '/admin' : from;
+      navigate(dest, { replace: true });
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Invalid credentials');
       // Shake animation via error state

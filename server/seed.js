@@ -21,22 +21,31 @@ const seedData = async () => {
     await Message.deleteMany({});
     console.log('Cleared existing data');
 
-    // Create users
+    // Create users (including admin and demo accounts)
     const users = await User.create([
-      { name: 'Alex Chen', email: 'alex@mit.edu', password: 'password123', role: 'seller', university: 'MIT', bio: 'Senior CS student passionate about building beautiful web experiences.', skills: ['React', 'Next.js', 'Tailwind CSS', 'Node.js', 'MongoDB'], isVerified: true, rating: 4.9, reviewCount: 127 },
-      { name: 'Sarah Kim', email: 'sarah@stanford.edu', password: 'password123', role: 'seller', university: 'Stanford', bio: 'Design student specializing in brand identity and UI/UX.', skills: ['Figma', 'Adobe XD', 'Photoshop', 'Illustrator', 'UI/UX'], isVerified: true, rating: 4.8, reviewCount: 89 },
-      { name: 'James Wilson', email: 'james@harvard.edu', password: 'password123', role: 'seller', university: 'Harvard', bio: 'English major with a passion for creative and technical writing.', skills: ['Content Writing', 'SEO', 'Copywriting', 'Blog Posts'], isVerified: true, rating: 4.7, reviewCount: 203 },
-      { name: 'Maya Patel', email: 'maya@ucla.edu', password: 'password123', role: 'seller', university: 'UCLA', bio: 'Film student specializing in video editing and motion graphics.', skills: ['Premiere Pro', 'After Effects', 'DaVinci Resolve', 'Motion Graphics'], isVerified: true, rating: 5.0, reviewCount: 56 },
-      { name: 'David Park', email: 'david@cmu.edu', password: 'password123', role: 'seller', university: 'CMU', bio: 'CS student focused on mobile development and cross-platform apps.', skills: ['React Native', 'Flutter', 'Swift', 'Kotlin'], isVerified: true, rating: 4.9, reviewCount: 34 },
-      { name: 'John Doe', email: 'john@nyu.edu', password: 'password123', role: 'buyer', university: 'NYU', bio: 'Business student looking for talented freelancers.', skills: [], isVerified: true },
-      { name: 'Emily Carter', email: 'emily@upenn.edu', password: 'password123', role: 'buyer', university: 'UPenn', bio: 'Startup founder seeking student talent.', skills: [], isVerified: true },
+      // ===== ADMIN =====
+      { name: 'Admin', email: 'admin@unilance.com', password: 'admin123', role: 'admin', university: 'UniLance HQ', bio: 'Platform administrator.', skills: [], isVerified: true, verificationStatus: 'verified', rating: 0, reviewCount: 0 },
+      // ===== DEMO ACCOUNTS =====
+      { name: 'Demo Buyer', email: 'buyer@demo.com', password: 'demo123', role: 'buyer', university: 'Demo University', bio: 'Demo buyer account for testing.', skills: [], isVerified: true, verificationStatus: 'verified' },
+      { name: 'Demo Seller', email: 'seller@demo.com', password: 'demo123', role: 'seller', university: 'Demo University', bio: 'Demo seller account for testing.', skills: ['React', 'Node.js', 'Figma'], isVerified: true, verificationStatus: 'verified', rating: 4.8, reviewCount: 15 },
+      // ===== SELLERS =====
+      { name: 'Alex Chen', email: 'alex@mit.edu', password: 'password123', role: 'seller', university: 'MIT', bio: 'Senior CS student passionate about building beautiful web experiences.', skills: ['React', 'Next.js', 'Tailwind CSS', 'Node.js', 'MongoDB'], isVerified: true, verificationStatus: 'verified', rating: 4.9, reviewCount: 127 },
+      { name: 'Sarah Kim', email: 'sarah@stanford.edu', password: 'password123', role: 'seller', university: 'Stanford', bio: 'Design student specializing in brand identity and UI/UX.', skills: ['Figma', 'Adobe XD', 'Photoshop', 'Illustrator', 'UI/UX'], isVerified: true, verificationStatus: 'verified', rating: 4.8, reviewCount: 89 },
+      { name: 'James Wilson', email: 'james@harvard.edu', password: 'password123', role: 'seller', university: 'Harvard', bio: 'English major with a passion for creative and technical writing.', skills: ['Content Writing', 'SEO', 'Copywriting', 'Blog Posts'], isVerified: true, verificationStatus: 'verified', rating: 4.7, reviewCount: 203 },
+      { name: 'Maya Patel', email: 'maya@ucla.edu', password: 'password123', role: 'seller', university: 'UCLA', bio: 'Film student specializing in video editing and motion graphics.', skills: ['Premiere Pro', 'After Effects', 'DaVinci Resolve', 'Motion Graphics'], isVerified: true, verificationStatus: 'verified', rating: 5.0, reviewCount: 56 },
+      { name: 'David Park', email: 'david@cmu.edu', password: 'password123', role: 'seller', university: 'CMU', bio: 'CS student focused on mobile development and cross-platform apps.', skills: ['React Native', 'Flutter', 'Swift', 'Kotlin'], isVerified: true, verificationStatus: 'verified', rating: 4.9, reviewCount: 34 },
+      // ===== BUYERS =====
+      { name: 'John Doe', email: 'john@nyu.edu', password: 'password123', role: 'buyer', university: 'NYU', bio: 'Business student looking for talented freelancers.', skills: [], isVerified: true, verificationStatus: 'verified' },
+      { name: 'Emily Carter', email: 'emily@upenn.edu', password: 'password123', role: 'buyer', university: 'UPenn', bio: 'Startup founder seeking student talent.', skills: [], isVerified: true, verificationStatus: 'verified' },
     ]);
     console.log(`Created ${users.length} users`);
+
+    // Index: 0=admin, 1=demoBuyer, 2=demoSeller, 3=alex, 4=sarah, 5=james, 6=maya, 7=david, 8=john, 9=emily
 
     // Create gigs
     const gigs = await Gig.create([
       {
-        seller: users[0]._id, title: 'I will build a modern React website with Tailwind CSS', description: 'Professional React development with modern design, responsive layouts, and clean code.',
+        seller: users[3]._id, title: 'I will build a modern React website with Tailwind CSS', description: 'Professional React development with modern design, responsive layouts, and clean code.',
         category: 'web-development', tags: ['react', 'tailwind', 'nextjs', 'responsive'],
         pricing: {
           basic: { title: 'Basic', description: 'Simple landing page', price: 50, deliveryDays: 3, features: ['1 Page', 'Responsive', 'Source Code'] },
@@ -46,7 +55,7 @@ const seedData = async () => {
         rating: 4.9, reviewCount: 127, orderCount: 234, isActive: true,
       },
       {
-        seller: users[1]._id, title: 'Professional logo and brand identity design', description: 'Creative logo design with full brand guidelines and multiple concepts.',
+        seller: users[4]._id, title: 'Professional logo and brand identity design', description: 'Creative logo design with full brand guidelines and multiple concepts.',
         category: 'design', tags: ['logo', 'branding', 'identity', 'design'],
         pricing: {
           basic: { title: 'Basic', description: '2 logo concepts', price: 35, deliveryDays: 2, features: ['2 Concepts', 'PNG/JPG', '1 Revision'] },
@@ -56,7 +65,7 @@ const seedData = async () => {
         rating: 4.8, reviewCount: 89, orderCount: 156, isActive: true,
       },
       {
-        seller: users[2]._id, title: 'SEO-optimized blog posts and article writing', description: 'High-quality, research-backed content that ranks well on search engines.',
+        seller: users[5]._id, title: 'SEO-optimized blog posts and article writing', description: 'High-quality, research-backed content that ranks well on search engines.',
         category: 'writing', tags: ['blog', 'seo', 'content', 'articles'],
         pricing: {
           basic: { title: 'Basic', description: '500-word article', price: 25, deliveryDays: 1, features: ['500 Words', 'SEO Optimized', '1 Revision'] },
@@ -66,7 +75,7 @@ const seedData = async () => {
         rating: 4.7, reviewCount: 203, orderCount: 312, isActive: true,
       },
       {
-        seller: users[3]._id, title: 'Cinematic video editing with motion graphics', description: 'Professional video editing with color grading, transitions, and motion graphics.',
+        seller: users[6]._id, title: 'Cinematic video editing with motion graphics', description: 'Professional video editing with color grading, transitions, and motion graphics.',
         category: 'video-editing', tags: ['video', 'editing', 'motion-graphics', 'cinematic'],
         pricing: {
           basic: { title: 'Basic', description: 'Simple edit up to 5 min', price: 75, deliveryDays: 3, features: ['Up to 5 min', 'Basic Editing', 'Color Correction'] },
@@ -76,7 +85,7 @@ const seedData = async () => {
         rating: 5.0, reviewCount: 56, orderCount: 89, isActive: true,
       },
       {
-        seller: users[4]._id, title: 'Full-stack mobile app development in React Native', description: 'Cross-platform mobile apps with beautiful UI and robust backend integration.',
+        seller: users[7]._id, title: 'Full-stack mobile app development in React Native', description: 'Cross-platform mobile apps with beautiful UI and robust backend integration.',
         category: 'mobile-development', tags: ['react-native', 'mobile', 'ios', 'android'],
         pricing: {
           basic: { title: 'Basic', description: 'Simple app with 3 screens', price: 150, deliveryDays: 7, features: ['3 Screens', 'Basic UI', 'Navigation'] },
@@ -85,40 +94,60 @@ const seedData = async () => {
         },
         rating: 4.9, reviewCount: 34, orderCount: 52, isActive: true,
       },
+      {
+        seller: users[2]._id, title: 'I will create a professional portfolio website', description: 'Modern portfolio site to showcase your work and skills.',
+        category: 'web-development', tags: ['portfolio', 'website', 'responsive'],
+        pricing: {
+          basic: { title: 'Basic', description: 'Single page portfolio', price: 30, deliveryDays: 2, features: ['1 Page', 'Responsive', 'Contact Form'] },
+          standard: { title: 'Standard', description: 'Multi-section portfolio', price: 70, deliveryDays: 4, features: ['5 Sections', 'Animations', 'Blog'] },
+          premium: { title: 'Premium', description: 'Full CMS portfolio', price: 150, deliveryDays: 7, features: ['CMS Integration', 'Custom Domain', 'SEO', 'Analytics'] },
+        },
+        rating: 4.8, reviewCount: 15, orderCount: 28, isActive: true,
+      },
     ]);
     console.log(`Created ${gigs.length} gigs`);
 
     // Create reviews
     const reviews = await Review.create([
-      { user: users[5]._id, gig: gigs[0]._id, rating: 5, comment: 'Incredible work! Delivered a stunning website ahead of schedule.' },
-      { user: users[6]._id, gig: gigs[0]._id, rating: 5, comment: 'Exactly what I needed. Modern design and clean code.' },
-      { user: users[5]._id, gig: gigs[1]._id, rating: 5, comment: 'Beautiful logo design. Very creative and professional.' },
-      { user: users[6]._id, gig: gigs[2]._id, rating: 4, comment: 'Great writing quality. Well-researched and SEO-friendly.' },
+      { user: users[8]._id, gig: gigs[0]._id, rating: 5, comment: 'Incredible work! Delivered a stunning website ahead of schedule.' },
+      { user: users[9]._id, gig: gigs[0]._id, rating: 5, comment: 'Exactly what I needed. Modern design and clean code.' },
+      { user: users[8]._id, gig: gigs[1]._id, rating: 5, comment: 'Beautiful logo design. Very creative and professional.' },
+      { user: users[9]._id, gig: gigs[2]._id, rating: 4, comment: 'Great writing quality. Well-researched and SEO-friendly.' },
+      { user: users[1]._id, gig: gigs[5]._id, rating: 5, comment: 'Demo Buyer: Amazing portfolio! Super clean design.' },
     ]);
     console.log(`Created ${reviews.length} reviews`);
 
     // Create orders
     const orders = await Order.create([
-      { buyer: users[5]._id, seller: users[0]._id, gig: gigs[0]._id, tier: 'standard', price: 120, status: 'active', deliveryDate: new Date(Date.now() + 5 * 86400000) },
-      { buyer: users[6]._id, seller: users[1]._id, gig: gigs[1]._id, tier: 'basic', price: 35, status: 'completed', deliveryDate: new Date(Date.now() - 2 * 86400000) },
-      { buyer: users[5]._id, seller: users[2]._id, gig: gigs[2]._id, tier: 'standard', price: 45, status: 'pending', deliveryDate: new Date(Date.now() + 2 * 86400000) },
+      { buyer: users[8]._id, seller: users[3]._id, gig: gigs[0]._id, tier: 'standard', price: 120, status: 'active', deliveryDate: new Date(Date.now() + 5 * 86400000) },
+      { buyer: users[9]._id, seller: users[4]._id, gig: gigs[1]._id, tier: 'basic', price: 35, status: 'completed', deliveryDate: new Date(Date.now() - 2 * 86400000) },
+      { buyer: users[8]._id, seller: users[5]._id, gig: gigs[2]._id, tier: 'standard', price: 45, status: 'pending', deliveryDate: new Date(Date.now() + 2 * 86400000) },
+      { buyer: users[1]._id, seller: users[2]._id, gig: gigs[5]._id, tier: 'basic', price: 30, status: 'completed', deliveryDate: new Date(Date.now() - 1 * 86400000) },
     ]);
     console.log(`Created ${orders.length} orders`);
 
     // Create messages
-    const convId = [users[5]._id, users[0]._id].sort().join('_');
+    const convId = [users[8]._id, users[3]._id].sort().join('_');
     await Message.create([
-      { conversationId: convId, sender: users[5]._id, receiver: users[0]._id, text: 'Hi! I need a React website for my startup.' },
-      { conversationId: convId, sender: users[0]._id, receiver: users[5]._id, text: 'Sure! I\'d love to help. Can you share more details about your project?' },
-      { conversationId: convId, sender: users[5]._id, receiver: users[0]._id, text: 'It\'s a SaaS dashboard with charts and user management.' },
-      { conversationId: convId, sender: users[0]._id, receiver: users[5]._id, text: 'I can definitely build that. I recommend the Standard tier for this scope.' },
+      { conversationId: convId, sender: users[8]._id, receiver: users[3]._id, text: 'Hi! I need a React website for my startup.' },
+      { conversationId: convId, sender: users[3]._id, receiver: users[8]._id, text: 'Sure! I\'d love to help. Can you share more details about your project?' },
+      { conversationId: convId, sender: users[8]._id, receiver: users[3]._id, text: 'It\'s a SaaS dashboard with charts and user management.' },
+      { conversationId: convId, sender: users[3]._id, receiver: users[8]._id, text: 'I can definitely build that. I recommend the Standard tier for this scope.' },
     ]);
     console.log('Created sample messages');
 
     console.log('\n✅ Database seeded successfully!');
-    console.log('\nTest Accounts:');
-    console.log('  Seller: alex@mit.edu / password123');
-    console.log('  Buyer:  john@nyu.edu / password123');
+    console.log('\n=== LOGIN CREDENTIALS ===');
+    console.log('┌──────────────┬──────────────────────┬──────────────┐');
+    console.log('│ Role         │ Email                │ Password     │');
+    console.log('├──────────────┼──────────────────────┼──────────────┤');
+    console.log('│ 🛡️  Admin     │ admin@unilance.com   │ admin123     │');
+    console.log('│ 🛒 Demo Buyer│ buyer@demo.com       │ demo123      │');
+    console.log('│ 💼 Demo Seller│ seller@demo.com     │ demo123      │');
+    console.log('│ 💼 Seller    │ alex@mit.edu         │ password123  │');
+    console.log('│ 🛒 Buyer     │ john@nyu.edu         │ password123  │');
+    console.log('└──────────────┴──────────────────────┴──────────────┘');
+    console.log('\nAdmin dashboard: /admin');
     process.exit(0);
   } catch (error) {
     console.error('Seeding error:', error.message);

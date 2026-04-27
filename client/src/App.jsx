@@ -23,6 +23,7 @@ const Messages = lazy(() => import('./pages/Messages'));
 const Profile = lazy(() => import('./pages/Profile'));
 const CreateGig = lazy(() => import('./pages/CreateGig'));
 const OrderDetails = lazy(() => import('./pages/OrderDetails'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 
 // Static/info pages (lazy — rarely visited)
 const HowItWorks = lazy(() => import('./pages/HowItWorks'));
@@ -119,6 +120,12 @@ function App() {
                   <Route element={<ProtectedRoute requireRole="seller" />}>
                     <Route element={<DashboardLayout />}>
                       <Route path="/dashboard/create-gig" element={<CreateGig />} />
+                    </Route>
+                  </Route>
+
+                  <Route element={<ProtectedRoute requireRole="admin" />}>
+                    <Route element={<DashboardLayout />}>
+                      <Route path="/admin" element={<AdminDashboard />} />
                     </Route>
                   </Route>
 
