@@ -1,0 +1,67 @@
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+
+// Load env vars
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+
+const connectDB = require('../config/db');
+const { errorHandler, notFound } = require('../middleware/errorMiddleware');
+const { apiLimiter, authLimiter } = require('../middleware/rateLimiter');
+
+// Route imports
+const authRoutes = require('../routes/authRoutes');
+const gigRoutes = require('../routes/gigRoutes');
+const userRoutes = require('../routes/userRoutes');
+const orderRoutes = require('../routes/orderRoutes');
+const messageRoutes = require('../routes/messageRoutes');
+const notificationRoutes = require('../routes/notificationRoutes');
+const reviewRoutes = require('../routes/reviewRoutes');
+const analyticsRoutes = require('../routes/analyticsRoutes');
+const aiRoutes = require('../routes/aiRoutes');
+const paymentRoutes = require('../routes/paymentRoutes');
+const uploadRoutes = require('../routes/uploadRoutes');
+
+const app = express();
+
+// Connect to DB (cached across invocations in serverless)
+connectDB();
+
+// Middleware
+app.use(cors({
+  origin: process.env.CLIENT_URL || '*',
+  credentials: true,
+}));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+// Static uploads folder
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+
+// Rate limiting
+app.use('/api/auth', authLimiter);
+app.use('/api', apiLimiter);
+
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/gigs', gigRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/messages', messageRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/upload', uploadRoutes);
+
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Error handling
+app.use(notFound);
+app.use(errorHandler);
+
+module.exports = app;

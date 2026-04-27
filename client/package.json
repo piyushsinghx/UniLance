@@ -1,7 +1,7 @@
 {
-  "name": "client",
+  "name": "unilance-client",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,13 +9,11 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "typescript": "~6.0.2",
     "vite": "^8.0.4"
   },
   "dependencies": {
     "@radix-ui/react-tooltip": "^1.2.8",
     "@tailwindcss/vite": "^4.2.2",
-    "@types/three": "^0.184.0",
     "@vitejs/plugin-react": "^6.0.1",
     "axios": "^1.15.0",
     "canvas-confetti": "^1.9.4",

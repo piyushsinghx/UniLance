@@ -42,9 +42,9 @@ export const NotificationProvider = ({ children }) => {
         toast(notification.title, {
           icon: '🔔',
           style: {
-            background: '#1E293B',
-            color: '#F8FAFC',
-            border: '1px solid #334155'
+            background: '#1A1A2E',
+            color: '#FFFFFF',
+            border: '1px solid rgba(108, 99, 255, 0.2)'
           }
         });
       });

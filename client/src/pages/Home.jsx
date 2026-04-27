@@ -242,12 +242,12 @@ const Home = () => {
               >
                 <Link
                   to={`/gigs?category=${slug}`}
-                  className="group flex flex-col items-center gap-3 p-5 bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border)] hover:border-[var(--color-primary)]/40 transition-all card-hover"
+                  className="group flex flex-col items-center justify-center gap-3 p-5 min-h-[140px] bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border)] hover:border-[var(--color-primary)]/40 transition-all card-hover"
                 >
                   <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
                     <Icon size={24} className="text-white" />
                   </div>
-                  <span className="text-xs sm:text-sm font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors text-center">
+                  <span className="text-xs sm:text-sm font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors text-center leading-tight min-h-[2rem] flex items-center">
                     {name}
                   </span>
                 </Link>

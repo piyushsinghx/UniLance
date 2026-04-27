@@ -16,19 +16,40 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
+      let parsedUser;
       try {
-        const parsedUser = JSON.parse(stored);
-        setUser(parsedUser);
-
-        if (parsedUser?.token) {
-          const { data } = await getMe();
-          const hydratedUser = { ...parsedUser, ...data, token: parsedUser.token };
-          setUser(hydratedUser);
-          localStorage.setItem('unilance_user', JSON.stringify(hydratedUser));
-        }
+        parsedUser = JSON.parse(stored);
       } catch {
-        setUser(null);
+        // Malformed JSON in localStorage — clear it
         localStorage.removeItem('unilance_user');
+        setLoading(false);
+        return;
+      }
+
+      // Validate that parsed data is a proper user object with a token
+      if (!parsedUser || typeof parsedUser !== 'object' || !parsedUser.token) {
+        localStorage.removeItem('unilance_user');
+        setLoading(false);
+        return;
+      }
+
+      // Immediately set cached user so the UI doesn't flash to login
+      setUser(parsedUser);
+
+      try {
+        // Refresh user data from server
+        const { data } = await getMe();
+        const hydratedUser = { ...parsedUser, ...data, token: parsedUser.token };
+        setUser(hydratedUser);
+        localStorage.setItem('unilance_user', JSON.stringify(hydratedUser));
+      } catch (err) {
+        // If 401/403, token is expired/invalid — log out
+        if (err?.response?.status === 401 || err?.response?.status === 403) {
+          setUser(null);
+          localStorage.removeItem('unilance_user');
+        }
+        // For network errors (no response), keep the cached user
+        // This allows offline/slow-loading scenarios to still work
       } finally {
         setLoading(false);
       }

@@ -192,7 +192,7 @@ const Messages = () => {
       socket.off('newMessageNotification', handleIncomingMessage);
       socket.off('userTyping', handleTyping);
     };
-  }, [socket, activeConv, user._id]);
+  }, [socket, activeConv, user?._id]);
 
   useEffect(() => () => clearTimeout(typingTimeoutRef.current), []);
 

@@ -203,6 +203,32 @@ const Register = () => {
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
+              {/* Password strength indicator */}
+              {formData.password && (() => {
+                const pwd = formData.password;
+                let score = 0;
+                if (pwd.length >= 6) score++;
+                if (pwd.length >= 10) score++;
+                if (/[A-Z]/.test(pwd) && /[a-z]/.test(pwd)) score++;
+                if (/\d/.test(pwd)) score++;
+                if (/[^A-Za-z0-9]/.test(pwd)) score++;
+                const levels = [
+                  { label: 'Very Weak', color: 'bg-red-500', width: '20%' },
+                  { label: 'Weak', color: 'bg-orange-500', width: '40%' },
+                  { label: 'Fair', color: 'bg-yellow-500', width: '60%' },
+                  { label: 'Strong', color: 'bg-emerald-400', width: '80%' },
+                  { label: 'Very Strong', color: 'bg-emerald-500', width: '100%' },
+                ];
+                const level = levels[Math.min(score, levels.length) - 1] || levels[0];
+                return (
+                  <div className="mt-2">
+                    <div className="h-1.5 bg-bg-hover rounded-full overflow-hidden">
+                      <div className={`h-full ${level.color} rounded-full transition-all duration-300`} style={{ width: level.width }} />
+                    </div>
+                    <p className="text-xs text-text-muted mt-1">Strength: <span className="font-medium">{level.label}</span></p>
+                  </div>
+                );
+              })()}
             </div>
 
             <div>

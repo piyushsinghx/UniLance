@@ -33,7 +33,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   );
 };
 
-const DONUT_COLORS = ['#F59E0B', '#6366F1', '#22D3EE', '#10B981'];
+const DONUT_COLORS = ['#F59E0B', '#6C63FF', '#43E97B', '#FF6584'];
 
 const StatCard = ({ label, value, icon: Icon, color, trend, prefix = '' }) => (
   <motion.div
@@ -227,19 +227,19 @@ const Dashboard = () => {
                 <AreaChart data={earningsData} margin={{ top: 5, right: 5, bottom: 5, left: 0 }}>
                   <defs>
                     <linearGradient id="colorEarnings" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#6366F1" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#6366F1" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#6C63FF" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#6C63FF" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="colorOrders" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#22D3EE" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="#22D3EE" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#43E97B" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="#43E97B" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                   <XAxis dataKey="label" tick={{ fill: '#64748B', fontSize: 11 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: '#64748B', fontSize: 11 }} axisLine={false} tickLine={false} />
                   <Tooltip content={<CustomTooltip />} />
-                  <Area type="monotone" dataKey="earnings" name="Earnings" stroke="#6366F1" strokeWidth={2.5} fill="url(#colorEarnings)" dot={false} />
+                  <Area type="monotone" dataKey="earnings" name="Earnings" stroke="#6C63FF" strokeWidth={2.5} fill="url(#colorEarnings)" dot={false} />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (

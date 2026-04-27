@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock, Zap, ArrowRight, Star, Users, TrendingUp } from 'lucide-react';
 import useAuth from '../hooks/useAuth';
+import { loginUser } from '../services/authService';
 import Button from '../components/Button';
 import GradientOrb from '../components/GradientOrb';
 import toast from 'react-hot-toast';
@@ -60,10 +61,15 @@ const Login = () => {
   const [errors, setErrors] = useState({});
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Redirect to the page they tried to visit, or /dashboard
+  const from = location.state?.from?.pathname || '/dashboard';
 
   const validate = () => {
     const e = {};
     if (!form.email) e.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = 'Enter a valid email';
     if (!form.password) e.password = 'Password is required';
     return e;
   };
@@ -74,9 +80,10 @@ const Login = () => {
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setLoading(true);
     try {
-      await login(form.email, form.password);
+      const { data } = await loginUser({ email: form.email, password: form.password });
+      login(data);
       toast.success('Welcome back! 🎉');
-      navigate('/dashboard');
+      navigate(from, { replace: true });
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Invalid credentials');
       // Shake animation via error state
