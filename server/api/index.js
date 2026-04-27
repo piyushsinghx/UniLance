@@ -2,8 +2,13 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 
-// Load env vars
-require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+// In Vercel serverless, env vars are injected automatically.
+// Only load dotenv locally (it will silently fail if .env doesn't exist).
+try {
+  require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+} catch (e) {
+  // dotenv not critical in production
+}
 
 const connectDB = require('../config/db');
 const { errorHandler, notFound } = require('../middleware/errorMiddleware');
@@ -24,13 +29,18 @@ const uploadRoutes = require('../routes/uploadRoutes');
 
 const app = express();
 
-// Connect to DB (cached across invocations in serverless)
-connectDB();
+// Connect to DB (cached across warm invocations in serverless)
+let dbConnected = false;
+if (!dbConnected) {
+  connectDB().then(() => { dbConnected = true; }).catch(() => {});
+}
 
 // Middleware
 app.use(cors({
   origin: process.env.CLIENT_URL || '*',
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
