@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketplace | UniLance</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/reset.css">
+    <link rel="stylesheet" href="../css/typography.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/animations.css">
+    <link rel="stylesheet" href="../css/layout.css">
+    <script>
+      (() => {
+        const saved = localStorage.getItem("ul-theme");
+        const system = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        document.documentElement.setAttribute("data-theme", saved || system);
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="navbarMount"></div>
+    <main id="app" class="page-shell page-content">
+      <section class="marketplace-shell">
+        <div class="container">
+          <div class="marketplace-hero">
+            <div class="card-glass" style="padding:28px" data-animate>
+              <span class="eyebrow">Explore Student Talent</span>
+              <h1 style="margin-top:14px">Find focused freelancers for your next student-built project</h1>
+              <p style="margin:14px 0 24px">Browse verified students across design, development, writing, video, analytics, and more. Filter by skill, budget, delivery speed, and rating.</p>
+              <form class="search-bar" id="marketSearchForm">
+                <span aria-hidden="true">⌕</span>
+                <input class="search-input" id="marketSearch" type="search" placeholder="Search for UI designer, MERN app, video editor...">
+                <button class="btn btn-primary" type="submit">Search</button>
+              </form>
+            </div>
+            <aside class="filter-card" data-animate>
+              <span class="eyebrow">Fast Filters</span>
+              <div class="filter-stack" style="margin-top:18px" id="quickFilters">
+                <button class="chip-button" data-quick-category="web-development" type="button">Web Dev</button>
+                <button class="chip-button" data-quick-category="design" type="button">Design</button>
+                <button class="chip-button" data-quick-category="writing" type="button">Writing</button>
+                <button class="chip-button" data-quick-category="video-editing" type="button">Video</button>
+                <button class="chip-button" data-quick-category="data-science" type="button">Analytics</button>
+                <button class="chip-button" data-quick-rating="4.8" type="button">4.8+ Rated</button>
+                <button class="chip-button" data-quick-sort="popular" type="button">Popular</button>
+                <button class="chip-button" data-quick-sort="price-low" type="button">Budget First</button>
+              </div>
+            </aside>
+          </div>
+
+          <div class="marketplace-results">
+            <aside class="marketplace-filters">
+              <div class="filter-card">
+                <h3>Categories</h3>
+                <div class="filter-stack" id="categoryFilters" style="margin-top:16px"></div>
+              </div>
+              <div class="filter-card">
+                <h3>Price Range</h3>
+                <div class="form-row" style="margin-top:16px">
+                  <label class="form-group">
+                    <input class="form-input" id="minPrice" type="number" placeholder=" ">
+                    <span class="form-label">Min Price</span>
+                  </label>
+                  <label class="form-group">
+                    <input class="form-input" id="maxPrice" type="number" placeholder=" ">
+                    <span class="form-label">Max Price</span>
+                  </label>
+                </div>
+              </div>
+              <div class="filter-card">
+                <h3>Minimum Rating</h3>
+                <div class="filter-stack" style="margin-top:16px" id="ratingFilters">
+                  <button class="chip-button" data-rating="">All</button>
+                  <button class="chip-button" data-rating="4.0">4.0+</button>
+                  <button class="chip-button" data-rating="4.5">4.5+</button>
+                  <button class="chip-button" data-rating="4.8">4.8+</button>
+                </div>
+              </div>
+            </aside>
+
+            <section>
+              <div class="marketplace-toolbar">
+                <div>
+                  <h2>Marketplace results</h2>
+                  <p id="resultsMeta">Loading student gigs...</p>
+                </div>
+                <div style="display:flex;gap:12px;align-items:center">
+                  <select id="sortSelect" class="form-input" style="min-width:180px">
+                    <option value="">Newest</option>
+                    <option value="popular">Most Popular</option>
+                    <option value="rating">Highest Rated</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                  </select>
+                  <button class="btn btn-secondary btn-sm" id="clearFilters" type="button">Reset</button>
+                </div>
+              </div>
+
+              <div class="gig-grid" id="marketplaceGrid"></div>
+              <div class="pagination" id="pagination"></div>
+            </section>
+          </div>
+        </div>
+      </section>
+    </main>
+    <div id="footerMount"></div>
+    <div id="bottomNavMount"></div>
+    <script type="module" src="../js/pages/marketplace.js"></script>
+  </body>
+</html>

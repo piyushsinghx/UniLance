@@ -72,6 +72,14 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Serve frontend static files
+app.use(express.static(path.join(__dirname, '..', 'frontend')));
+
+// Redirect root to home page
+app.get('/', (req, res) => {
+  res.redirect('/pages/index.html');
+});
+
 // Error handling
 app.use(notFound);
 app.use(errorHandler);

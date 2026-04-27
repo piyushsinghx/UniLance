@@ -1,6 +1,7 @@
 const express = require('express');
 const { upload, uploadImage, uploadMultiple } = require('../controllers/uploadController');
 const { uploadLimiter } = require('../middleware/rateLimiter');
+const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 

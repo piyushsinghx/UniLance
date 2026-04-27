@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Code, Palette, PenTool, Video, Smartphone, BarChart3, Megaphone, Star, ArrowRight, Users, Shield, Zap, TrendingUp } from 'lucide-react';
-import Button from '../components/Button';
+import { motion } from 'framer-motion';
+import { Search, Code, Palette, PenTool, Video, Smartphone, BarChart3, Megaphone, Star, ArrowRight, Users, Shield, Zap, TrendingUp, CheckCircle } from 'lucide-react';
 import GigCard from '../components/GigCard';
 import { SkeletonCard } from '../components/Loader';
 import { getFeaturedGigs } from '../services/gigService';
-import { useEffect } from 'react';
-
-
+import HeroCanvas from '../components/HeroCanvas';
+import GradientOrb from '../components/GradientOrb';
+import TypeWriter from '../components/TypeWriter';
+import CountUp from '../components/CountUp';
 
 const CATEGORIES = [
   { name: 'Web Development', slug: 'web-development', icon: Code, color: 'from-blue-500 to-indigo-600' },
@@ -20,11 +21,23 @@ const CATEGORIES = [
 ];
 
 const STATS = [
-  { value: '10K+', label: 'Student Freelancers', icon: Users },
-  { value: '50K+', label: 'Projects Completed', icon: TrendingUp },
-  { value: '500+', label: 'Universities', icon: Shield },
-  { value: '4.9', label: 'Average Rating', icon: Star },
+  { end: 10000, suffix: '+', label: 'Student Freelancers', icon: Users },
+  { end: 50000, suffix: '+', label: 'Projects Completed', icon: TrendingUp },
+  { end: 500, suffix: '+', label: 'Universities', icon: Shield },
+  { end: 4.9, suffix: '', label: 'Average Rating', icon: Star, decimals: 1 },
 ];
+
+const TRUST_BADGES = [
+  '10,000+ Students',
+  '500+ Universities',
+  '4.9★ Rating',
+  '₹50L+ Earned',
+];
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  show: (i = 0) => ({ opacity: 1, y: 0, transition: { delay: i * 0.08, duration: 0.5, ease: 'easeOut' } }),
+};
 
 const Home = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -33,212 +46,320 @@ const Home = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchFeatured = async () => {
-      try {
-        const { data } = await getFeaturedGigs();
-        setFeaturedGigs(data);
-      } catch (error) {
-        console.error('Error fetching featured gigs:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchFeatured();
+    getFeaturedGigs()
+      .then(({ data }) => setFeaturedGigs(data))
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/gigs?search=${encodeURIComponent(searchQuery.trim())}`);
-    }
+    if (searchQuery.trim()) navigate(`/gigs?search=${encodeURIComponent(searchQuery.trim())}`);
   };
 
   return (
-    <div>
-      {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        {/* Animated gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-bg-primary to-accent/10 animate-gradient"></div>
-        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-accent/10 rounded-full blur-3xl"></div>
+    <div className="overflow-x-hidden">
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
-          <div className="text-center max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-8 animate-fade-in">
-              <Zap size={16} />
-              The #1 Student Freelance Marketplace
-            </div>
+      {/* ── HERO ── */}
+      <section className="relative min-h-screen flex items-center overflow-hidden">
+        {/* 3D WebGL background */}
+        <HeroCanvas />
 
-            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-text-primary leading-tight mb-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-              Hire Student Talent.{' '}
-              <span className="gradient-text">Build Real Projects.</span>
-            </h1>
+        {/* Gradient orbs */}
+        <GradientOrb size={600} color="#6366F1" top="-10%" left="-10%" />
+        <GradientOrb size={500} color="#22D3EE" bottom="-15%" right="-5%" delay={3} />
+        <GradientOrb size={400} color="#8B5CF6" top="40%" left="40%" delay={6} />
 
-            <p className="text-lg sm:text-xl text-text-secondary max-w-2xl mx-auto mb-10 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              Connect with talented university students for web development, design, writing, and more. Quality work at student-friendly prices.
-            </p>
+        {/* Perspective grid */}
+        <div className="perspective-grid" />
+
+        {/* Content */}
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 lg:py-40">
+          <div className="max-w-3xl mx-auto text-center">
+
+            {/* Trust badge */}
+            <motion.div
+              initial={{ opacity: 0, y: -16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.5 }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-[var(--color-primary)]/30 text-[var(--color-primary)] text-sm font-semibold mb-8"
+            >
+              <Zap size={14} className="text-[var(--color-accent)]" />
+              Trusted by 10,000+ University Students
+              <CheckCircle size={14} className="text-[var(--color-success)]" />
+            </motion.div>
+
+            {/* Headline */}
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+              className="text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-tight mb-4"
+            >
+              <span className="text-[var(--text-primary)]">Hire Student Talent.</span>
+              <br />
+              <span className="gradient-text-animated">Build Real Projects.</span>
+            </motion.h1>
+
+            {/* Typewriter subheadline */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+              className="text-lg sm:text-xl text-[var(--text-secondary)] mb-3 min-h-[2rem]"
+            >
+              Students who{' '}
+              <TypeWriter
+                phrases={['build stunning websites.', 'design beautiful brands.', 'write compelling content.', 'edit cinematic videos.', 'analyze complex data.']}
+                className="text-[var(--color-accent)] font-semibold"
+              />
+            </motion.p>
 
             {/* Search bar */}
-            <form onSubmit={handleSearch} className="max-w-2xl mx-auto mb-12 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+            <motion.form
+              onSubmit={handleSearch}
+              initial={{ opacity: 0, y: 20, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
+              className="max-w-2xl mx-auto mb-6 mt-8"
+            >
               <div className="relative group">
-                <Search size={20} className="absolute left-5 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-primary transition-colors" />
+                <Search size={20} className="absolute left-5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] group-focus-within:text-[var(--color-primary)] transition-colors" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder='Try "website design", "video editing", "blog writing"...'
-                  className="w-full pl-14 pr-32 py-4 bg-bg-secondary border border-border rounded-2xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-base"
+                  placeholder='Try "React website", "logo design", "video editing"...'
+                  className="w-full pl-14 pr-36 py-4 h-14 glass border border-[var(--border)] rounded-2xl text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20 transition-all text-base"
                 />
                 <button
                   type="submit"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-primary hover:bg-primary-hover text-white font-semibold px-6 py-2.5 rounded-xl transition-all hover:shadow-lg hover:shadow-primary/25"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-dark)] text-white font-semibold px-6 py-2.5 rounded-xl transition-all hover:shadow-lg hover:shadow-[var(--color-primary)]/30 hover:-translate-y-[calc(50%+2px)] active:scale-95"
                 >
                   Search
                 </button>
               </div>
-            </form>
+            </motion.form>
 
             {/* Popular tags */}
-            <div className="flex flex-wrap justify-center gap-2 animate-fade-in" style={{ animationDelay: '0.4s' }}>
-              <span className="text-sm text-text-muted">Popular:</span>
-              {['React Developer', 'Logo Design', 'Content Writing', 'Video Editing'].map((tag) => (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.75 }}
+              className="flex flex-wrap justify-center gap-2 mb-10"
+            >
+              <span className="text-sm text-[var(--text-muted)]">Popular:</span>
+              {['React Developer', 'Logo Design', 'Content Writing', 'Video Editing', 'UI/UX Design'].map((tag) => (
                 <Link
                   key={tag}
                   to={`/gigs?search=${encodeURIComponent(tag)}`}
-                  className="px-3 py-1 text-sm text-text-secondary hover:text-primary bg-bg-card hover:bg-primary/10 border border-border rounded-full transition-all"
+                  className="px-3 py-1 text-sm text-[var(--text-secondary)] hover:text-[var(--color-primary)] glass border border-[var(--border)] rounded-full transition-all hover:border-[var(--color-primary)]/40"
                 >
                   {tag}
                 </Link>
               ))}
-            </div>
+            </motion.div>
+
+            {/* Trust badges row */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.9 }}
+              className="flex flex-wrap items-center justify-center gap-3"
+            >
+              {TRUST_BADGES.map((badge) => (
+                <span
+                  key={badge}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[var(--text-secondary)] glass border border-[var(--border)] rounded-full"
+                >
+                  <CheckCircle size={12} className="text-[var(--color-success)]" />
+                  {badge}
+                </span>
+              ))}
+            </motion.div>
           </div>
         </div>
+
+        {/* Bottom gradient fade */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[var(--bg-primary)] to-transparent pointer-events-none" />
       </section>
 
-      {/* Stats */}
-      <section className="py-16 border-y border-border">
+      {/* ── STATS ── */}
+      <section className="py-16 border-y border-[var(--border)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {STATS.map(({ value, label, icon: Icon }, i) => (
-              <div key={label} className="text-center animate-fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 text-primary mb-3">
-                  <Icon size={24} />
+            {STATS.map(({ end, suffix, label, icon: Icon, decimals = 0 }, i) => (
+              <motion.div
+                key={label}
+                variants={fadeUp}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true }}
+                custom={i}
+                className="text-center"
+              >
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-[var(--color-primary)]/10 text-[var(--color-primary)] mb-3">
+                  <Icon size={22} />
                 </div>
-                <p className="text-3xl font-bold text-text-primary mb-1">{value}</p>
-                <p className="text-sm text-text-secondary">{label}</p>
-              </div>
+                <p className="text-3xl font-black text-[var(--text-primary)] mb-1">
+                  <CountUp end={end} suffix={suffix} decimals={decimals} />
+                </p>
+                <p className="text-sm text-[var(--text-secondary)]">{label}</p>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Categories */}
+      {/* ── CATEGORIES ── */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-text-primary mb-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)] mb-4">
               Explore <span className="gradient-text">Categories</span>
             </h2>
-            <p className="text-text-secondary max-w-xl mx-auto">
-              Find the perfect student freelancer for your project across popular categories
+            <p className="text-[var(--text-secondary)] max-w-xl mx-auto">
+              Find the perfect student freelancer across every popular skill
             </p>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4" style={{ perspective: '1000px' }}>
             {CATEGORIES.map(({ name, slug, icon: Icon, color }, i) => (
-              <Link
+              <motion.div
                 key={slug}
-                to={`/gigs?category=${slug}`}
-                className="group flex flex-col items-center gap-3 p-6 bg-bg-secondary rounded-xl border border-border hover:border-primary/30 card-hover animate-fade-in"
-                style={{ animationDelay: `${i * 0.05}s` }}
+                variants={fadeUp}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true }}
+                custom={i}
+                whileHover={{ scale: 1.05, rotateY: 5 }}
+                whileTap={{ scale: 0.96 }}
               >
-                <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                  <Icon size={24} className="text-white" />
-                </div>
-                <span className="text-xs sm:text-sm font-medium text-text-secondary group-hover:text-text-primary transition-colors text-center">
-                  {name}
-                </span>
-              </Link>
+                <Link
+                  to={`/gigs?category=${slug}`}
+                  className="group flex flex-col items-center gap-3 p-5 bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border)] hover:border-[var(--color-primary)]/40 transition-all card-hover"
+                >
+                  <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                    <Icon size={24} className="text-white" />
+                  </div>
+                  <span className="text-xs sm:text-sm font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors text-center">
+                    {name}
+                  </span>
+                </Link>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Featured Gigs */}
-      <section className="py-20 bg-bg-secondary/50">
+      {/* ── FEATURED GIGS ── */}
+      <section className="py-20 bg-[var(--bg-secondary)]/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-12">
-            <div>
-              <h2 className="text-3xl sm:text-4xl font-bold text-text-primary mb-2">
+            <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
+              <h2 className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)] mb-2">
                 Featured <span className="gradient-text">Gigs</span>
               </h2>
-              <p className="text-text-secondary">Top-rated services from verified student freelancers</p>
-            </div>
-            <Link to="/gigs" className="hidden sm:flex items-center gap-2 text-primary hover:text-primary-hover font-medium text-sm transition-colors">
-              View All <ArrowRight size={16} />
+              <p className="text-[var(--text-secondary)]">Top-rated services from verified student freelancers</p>
+            </motion.div>
+            <Link to="/gigs" className="hidden sm:flex items-center gap-2 text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] font-medium text-sm transition-colors group">
+              View All <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {loading ? (
-              Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
-            ) : featuredGigs.length > 0 ? (
-              featuredGigs.slice(0, 4).map((gig, i) => (
-                <div key={gig._id} className="animate-fade-in" style={{ animationDelay: `${i * 0.05}s` }}>
-                  <GigCard gig={gig} />
-                </div>
-              ))
-            ) : (
-              <p className="col-span-full text-center py-8 text-text-secondary">No featured gigs at the moment.</p>
-            )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" style={{ perspective: '1000px' }}>
+            {loading
+              ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
+              : featuredGigs.length > 0
+                ? featuredGigs.slice(0, 4).map((gig, i) => (
+                    <motion.div
+                      key={gig._id}
+                      variants={fadeUp}
+                      initial="hidden"
+                      whileInView="show"
+                      viewport={{ once: true }}
+                      custom={i}
+                    >
+                      <GigCard gig={gig} />
+                    </motion.div>
+                  ))
+                : <p className="col-span-full text-center py-8 text-[var(--text-muted)]">No featured gigs yet.</p>
+            }
           </div>
 
           <div className="text-center mt-10 sm:hidden">
-            <Link to="/gigs">
-              <Button variant="outline">View All Gigs</Button>
+            <Link to="/gigs" className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--color-primary)] text-white font-semibold rounded-xl hover:bg-[var(--color-primary-hover)] transition-colors">
+              View All Gigs <ArrowRight size={16} />
             </Link>
           </div>
         </div>
       </section>
 
-      {/* How it works */}
+      {/* ── HOW IT WORKS ── */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-text-primary mb-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)] mb-4">
               How It <span className="gradient-text">Works</span>
             </h2>
-            <p className="text-text-secondary max-w-xl mx-auto">Get started in three simple steps</p>
-          </div>
+            <p className="text-[var(--text-secondary)] max-w-xl mx-auto">Get started in three simple steps</p>
+          </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { step: '01', title: 'Find a Service', desc: 'Browse through thousands of student-created gigs across multiple categories.' },
-              { step: '02', title: 'Place an Order', desc: 'Choose your package, share your requirements, and place your order securely.' },
-              { step: '03', title: 'Get Results', desc: 'Receive quality work from talented students. Rate and review your experience.' },
+              { step: '01', title: 'Find a Service', desc: 'Browse thousands of student-created gigs across categories.' },
+              { step: '02', title: 'Place an Order', desc: 'Choose your package, share requirements, and pay securely.' },
+              { step: '03', title: 'Get Results', desc: 'Receive quality work from talented students. Rate and review.' },
             ].map(({ step, title, desc }, i) => (
-              <div key={step} className="relative group animate-fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
-                <div className="p-8 bg-bg-secondary rounded-2xl border border-border group-hover:border-primary/30 card-hover">
-                  <div className="text-5xl font-black text-primary/20 mb-4">{step}</div>
-                  <h3 className="text-xl font-bold text-text-primary mb-3">{title}</h3>
-                  <p className="text-text-secondary text-sm leading-relaxed">{desc}</p>
+              <motion.div
+                key={step}
+                variants={fadeUp}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true }}
+                custom={i}
+                className="relative group"
+              >
+                <div className="p-8 bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border)] group-hover:border-[var(--color-primary)]/40 card-hover relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-primary)]/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+                  <div className="text-6xl font-black bg-gradient-to-br from-[var(--color-primary)]/30 to-[var(--color-accent)]/20 bg-clip-text text-transparent mb-4">{step}</div>
+                  <h3 className="text-xl font-bold text-[var(--text-primary)] mb-3">{title}</h3>
+                  <p className="text-[var(--text-secondary)] text-sm leading-relaxed">{desc}</p>
                 </div>
                 {i < 2 && (
-                  <div className="hidden md:block absolute top-1/2 -right-4 text-text-muted">
+                  <div className="hidden md:block absolute top-1/2 -right-5 z-10 text-[var(--color-primary)]/40">
                     <ArrowRight size={24} />
                   </div>
                 )}
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary-dark to-accent p-10 sm:p-16 text-center">
-            <div className="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2240%22%20height%3D%2240%22%20viewBox%3D%220%200%2040%2040%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22%23fff%22%20fill-opacity%3D%220.05%22%3E%3Cpath%20d%3D%22M0%2040L40%200H20L0%2020zm40%200V20L20%2040z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E')] opacity-50"></div>
+      {/* ── CTA ── */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.97 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[var(--color-primary)] via-[var(--color-secondary)] to-[var(--color-accent)] p-10 sm:p-16 text-center"
+          >
+            {/* Decorative orbs */}
+            <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2" />
+            <div className="absolute bottom-0 right-0 w-96 h-96 bg-white/5 rounded-full translate-x-1/4 translate-y-1/4" />
+
             <div className="relative z-10">
               <h2 className="text-3xl sm:text-5xl font-extrabold text-white mb-6">
                 Ready to Get Started?
@@ -247,21 +368,22 @@ const Home = () => {
                 Join thousands of university students already using UniLance to build portfolios, earn income, and gain real-world experience.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Link to="/register">
-                  <Button variant="accent" size="xl">
-                    Join as a Freelancer <ArrowRight size={20} />
-                  </Button>
-                </Link>
-                <Link to="/gigs">
-                  <Button variant="secondary" size="xl" className="border-white/20 text-white hover:bg-white/10">
+                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                  <Link to="/register" className="inline-flex items-center gap-2 bg-white text-[var(--color-primary)] font-bold px-8 py-4 rounded-2xl hover:shadow-2xl transition-all">
+                    Join as a Freelancer <ArrowRight size={18} />
+                  </Link>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                  <Link to="/gigs" className="inline-flex items-center gap-2 border-2 border-white/30 text-white font-bold px-8 py-4 rounded-2xl hover:bg-white/10 transition-all">
                     Hire Talent
-                  </Button>
-                </Link>
+                  </Link>
+                </motion.div>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
+
     </div>
   );
 };
